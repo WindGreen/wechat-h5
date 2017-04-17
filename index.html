@@ -1,0 +1,150 @@
+<script type="text/javascript">
+
+	class Color{
+		static get black(){
+			return '#000';
+		}
+
+		static get white(){
+			return '#FFF';
+		}
+
+		static get red(){
+			return '#F00';
+		}
+
+		static get blue(){
+			return '#00F';
+		}
+
+		static get green(){
+			return '#0F0';
+		}
+	}
+
+	class Screen{
+		constructor(){
+			this.width=window.screen.availWidth;
+			this.height=window.screen.availHeight;
+		}
+	}
+
+	class Size{
+		constructor(width,height){
+			this.width=width;
+			this.height=height;
+		}
+	}
+
+	class Position{
+		constructor(x,y){
+			this.x=x;
+			this.y=y;
+		}
+	}
+
+	class Scene{
+		constructor(size){
+			this.size=size;
+			this.elements=new Array;
+		}
+
+		add(element){
+			this.elements.push(element);
+		}
+
+		display(){
+			for (var i = 0; i < this.elements.length; i++) {
+				document.write(this.elements[i].show());
+			}
+		}
+	}
+
+	class Page{
+		constructor(){
+			this.size;
+		}
+	}
+
+	class Element{
+		constructor(position,size){
+			this.position=position;
+			this.size=size;
+		}
+
+		show(){
+			return this.toString();
+		}
+
+		get style(){
+			return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
+		}
+	}
+
+	class Animation{
+
+	}
+
+	class Picture extends Element{
+		constructor(position,size,src=''){
+			super(position,size);
+			this.src=src;
+		}
+
+		toString(){
+			return "<img style="+this.style+" src="+this.src+">";
+		}
+	}
+
+	class Text extends Element{
+		constructor(position,size,content){
+			super(position,size);
+			this.content=content;
+			this.color=Color.red;
+		}
+
+		get style(){
+			let style=super.style;
+			return style+"color:"+this.color+";";
+		}
+
+		toString(){
+			return "<p style="+this.style+">"+this.content+"</p>"
+		}
+	}
+
+	class Voice extends Element{
+		constructor(position,size,src=''){
+			super(position,size);
+			this.src=src;
+		}
+	}
+
+	class Video extends Element{
+		constructor(position,size,src=''){
+			super(position,size);
+			this.src=src;
+		}
+	}
+
+	class Button extends Element{
+		constructor(position,size){
+			super(position,size);
+		}
+	}
+
+
+	let screen=new Screen;//屏幕
+	let scene=new Scene(new Size(screen.width,screen.height));//场景
+	(function(){
+		let picture=new Picture(new Position(150,70),new Size(100,50),"https://raw.githubusercontent.com/panteng/wechat-h5-boilerplate/master/demo.jpg");
+
+		let text=new Text(new Position(50,20),new Size(100,50),"哈哈");
+
+		scene.add(picture);
+		scene.add(text);
+	})();
+	console.log(scene);
+	scene.display();//展示元素
+
+</script>
