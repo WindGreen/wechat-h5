@@ -1,150 +1,286 @@
-<script type="text/javascript">
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+      <style type="text/css">
+         /* html,body{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+          }*/
+      </style>
+    </head>
+    <script type="text/javascript">
 
-	class Color{
-		static get black(){
-			return '#000';
-		}
+        class Color{
+            static get black(){
+                return '#000';
+            }
 
-		static get white(){
-			return '#FFF';
-		}
+            static get white(){
+                return '#FFF';
+            }
 
-		static get red(){
-			return '#F00';
-		}
+            static get red(){
+                return '#F00';
+            }
 
-		static get blue(){
-			return '#00F';
-		}
+            static get blue(){
+                return '#00F';
+            }
 
-		static get green(){
-			return '#0F0';
-		}
-	}
+            static get green(){
+                return '#0F0';
+            }
+        }
 
-	class Screen{
-		constructor(){
-			this.width=window.screen.availWidth;
-			this.height=window.screen.availHeight;
-		}
-	}
+        class Screen{
+            constructor(){
+                // this.width=document.body.clientWidth;
+                // this.height=document.body.clientHeight;
 
-	class Size{
-		constructor(width,height){
-			this.width=width;
-			this.height=height;
-		}
-	}
+                // this.width=window.screen.availWidth;
+                // this.height=window.screen.availHeight;
+                
+                this.width=window.innerWidth;
+                this.height=window.innerHeight;
+            }
+        }
 
-	class Position{
-		constructor(x,y){
-			this.x=x;
-			this.y=y;
-		}
-	}
+        class Size{
+            constructor(width,height){
+                this._width=width;
+                this._height=height;
+            }
 
-	class Scene{
-		constructor(size){
-			this.size=size;
-			this.elements=new Array;
-		}
+            get width(){
+                return scene.width*this._width+"px";
+            }
 
-		add(element){
-			this.elements.push(element);
-		}
+            get height(){
+                return scene.height*this._height+"px";
+            }
+        }
 
-		display(){
-			for (var i = 0; i < this.elements.length; i++) {
-				document.write(this.elements[i].show());
-			}
-		}
-	}
+        class Position{
+            constructor(x,y){
+                this.x=x;
+                this.y=y;
+            }
+        }
 
-	class Page{
-		constructor(){
-			this.size;
-		}
-	}
+        /**
+         * 动作
+         */
+        class Action{
+            constructor($name){
+                this.name=$name;
+            }
 
-	class Element{
-		constructor(position,size){
-			this.position=position;
-			this.size=size;
-		}
+            get act(){
+                return this.name;
+            }
+        }
 
-		show(){
-			return this.toString();
-		}
+        class AnimateCss extends Action{
+        }
 
-		get style(){
-			return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
-		}
-	}
+        class MoveAction extends Action{
+            get act(){
+                return "animated bounce";
+            }
+        }
 
-	class Animation{
+        /**
+         * 动画 一系列动作的集合
+         */
+        class Animation{
+            constructor(){
+                this.actions=new Array;
+            }
 
-	}
-
-	class Picture extends Element{
-		constructor(position,size,src=''){
-			super(position,size);
-			this.src=src;
-		}
-
-		toString(){
-			return "<img style="+this.style+" src="+this.src+">";
-		}
-	}
-
-	class Text extends Element{
-		constructor(position,size,content){
-			super(position,size);
-			this.content=content;
-			this.color=Color.red;
-		}
-
-		get style(){
-			let style=super.style;
-			return style+"color:"+this.color+";";
-		}
-
-		toString(){
-			return "<p style="+this.style+">"+this.content+"</p>"
-		}
-	}
-
-	class Voice extends Element{
-		constructor(position,size,src=''){
-			super(position,size);
-			this.src=src;
-		}
-	}
-
-	class Video extends Element{
-		constructor(position,size,src=''){
-			super(position,size);
-			this.src=src;
-		}
-	}
-
-	class Button extends Element{
-		constructor(position,size){
-			super(position,size);
-		}
-	}
+            add(action){
+                this.actions.push(action);
+            }
 
 
-	let screen=new Screen;//屏幕
-	let scene=new Scene(new Size(screen.width,screen.height));//场景
-	(function(){
-		let picture=new Picture(new Position(150,70),new Size(100,50),"https://raw.githubusercontent.com/panteng/wechat-h5-boilerplate/master/demo.jpg");
+        }
 
-		let text=new Text(new Position(50,20),new Size(100,50),"哈哈");
+        class Scene{
+            constructor(width,height){
+                this.width=width;
+                this.height=height;
+                this.pages=new Array;
+                this.doms=new Array;
+            }
 
-		scene.add(picture);
-		scene.add(text);
-	})();
-	console.log(scene);
-	scene.display();//展示元素
+            add(page){
+                this.pages.push(page);
+            }
 
-</script>
+
+            /**
+             * 切换页面-进入
+             * @Author   WindGreen<yqfwind@163.com>
+             * @DateTime 2017-04-18T09:38:42+0800
+             * @param    {[type]}                   i [description]
+             * @return   {[type]}                     [description]
+             */
+            enter(i){
+                if(this.pages[i]!==undefined){
+                    this.doms[i]=this.pages[i].display();
+                }else{
+                    console.log(i+" of pages not defined!");
+                }
+
+                this.display();
+            }
+
+            /**
+             * 切换页面-离开
+             * @Author   WindGreen<yqfwind@163.com>
+             * @DateTime 2017-04-18T09:39:00+0800
+             * @param    {[type]}                   i [description]
+             * @return   {[type]}                     [description]
+             */
+            leave(i){
+                this.doms[i]='';
+
+                this.display();
+            }
+
+            display(){
+                for (var i = 0; i < this.doms.length; i++) {
+                    document.write(this.doms[i]);
+                }
+            }
+
+        }
+
+        class Page{
+            constructor(size){
+                this.size=size;
+                this.elements=new Array;
+                this.dom='';
+            }
+
+            add(element){
+                this.elements.push(element);
+            }
+
+            /**
+             * 将页面元素生成dom
+             * @Author   WindGreen<yqfwind@163.com>
+             * @DateTime 2017-04-18T09:40:40+0800
+             * @return   {[type]}                   [description]
+             */
+            display(){
+                for (var i = 0; i < this.elements.length; i++) {
+                    this.dom+=this.elements[i].show();
+                }
+                return this.dom;
+            }
+
+        }
+
+        class Element{
+            constructor(position,size){
+                this.position=position;
+                this.size=size;
+                this.animation=new Animation;
+            }
+
+            show(){
+                return this.toTag();
+            }
+
+            get className(){
+                let name='';
+                for (var i = 0; i < this.animation.actions.length; i++) {
+                    name+=this.animation.actions[i].act+" ";
+                }
+                return name;
+            }
+
+            get style(){
+                return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
+            }
+        }
+
+        class Picture extends Element{
+            constructor(position,size,src=''){
+                super(position,size);
+                this.src=src;
+            }
+
+            toTag(){
+                return '<img class="'+this.className+'" style="'+this.style+'" src="'+this.src+'">';
+            }
+        }
+
+        class Text extends Element{
+            constructor(position,size,content){
+                super(position,size);
+                this.content=content;
+                this.color=Color.red;
+            }
+
+            get style(){
+                let style=super.style;
+                return style+"color:"+this.color+";";
+            }
+
+            toTag(){
+                return '<p class="'+this.className+'" style="'+this.style+'">'+this.content+'</p>';
+            }
+        }
+
+        class Voice extends Element{
+            constructor(position,size,src=''){
+                super(position,size);
+                this.src=src;
+            }
+        }
+
+        class Video extends Element{
+            constructor(position,size,src=''){
+                super(position,size);
+                this.src=src;
+            }
+        }
+
+        class Button extends Element{
+            constructor(position,size){
+                super(position,size);
+            }
+        }
+
+        var scene;
+
+        //window.onload=function(){
+            let screen=new Screen;//屏幕
+            console.log(screen);
+            scene=new Scene(screen.width,screen.height);//场景
+            (function(){
+                let page=new Page(new Size(scene.width,scene.height));
+
+                let picture=new Picture(new Position(100,10),new Size(1,0.5),"https://raw.githubusercontent.com/panteng/wechat-h5-boilerplate/master/demo.jpg");
+                picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
+
+                let text=new Text(new Position('50%','20%'),new Size(1,0.5),"哈哈");
+                text.animation.add(new AnimateCss('animated bounceInRight infinite'));
+
+                page.add(picture);
+                page.add(text);
+
+                scene.add(page);
+            })();
+            console.log(scene);
+
+            scene.enter(0);//展示页面
+        //}
+    </script>
+<body>
+
+</body>
+</html>
