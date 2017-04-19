@@ -206,9 +206,6 @@ class Element{
         return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
     }
 
-    get template(){
-        return '<'+this.tagName+' :id="id" :class="className" :style="style">'+this.dom+'</'+this.tagName+'>';
-    }
 
     /**
      * 将元素生成dom
@@ -235,7 +232,7 @@ class Element{
     vue(){
         let element=this;
         Vue.component(this.id,{
-            template:this.template,
+            template:'<'+this.tagName+' :id="id" :class="className" :style="style">'+this.dom+'</'+this.tagName+'>',
             methods:{
                 getProperty:function(name){
                     return element[name];
@@ -279,7 +276,24 @@ class Picture extends Element{
     }
 
     get template(){
-        return '<'+this.tagName+' :id="id" :class="className" :style="style" :src="getProperty(\'src\')"></img>';
+        return ;
+    }
+
+    vue(){
+        let element=this;
+        Vue.component(this.id,{
+            template:'<'+this.tagName+' :id="id" :class="className" :style="style" :src="src"></img>',
+            data:function(){
+                return {
+                    id:element.id,
+                    tagName:element.tagName,
+                    className:element.className,
+                    style:element.style,
+                    src:element.src
+                };
+            }
+        });
+        return '<'+this.id+'></'+this.id+'>';
     }
 }
 
@@ -305,8 +319,21 @@ class Text extends Element{
         return style+"color:"+this.color+";font-size:"+this.fontSize+"px;";
     }
 
-    get template(){
-        return '<'+this.tagName+' :id="id" :class="className" :style="style">{{getProperty("content")}}</'+this.tagName+'>';
+    vue(){
+        let element=this;
+        Vue.component(this.id,{
+            template:'<'+this.tagName+' :id="id" :class="className" :style="style">{{content}}</'+this.tagName+'>',
+            data:function(){
+                return {
+                    id:element.id,
+                    tagName:element.tagName,
+                    className:element.className,
+                    style:element.style,
+                    content:element.content
+                };
+            }
+        });
+        return '<'+this.id+'></'+this.id+'>';
     }
 }
 
