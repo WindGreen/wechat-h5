@@ -1,286 +1,88 @@
 <!DOCTYPE html>
 <html>
-    <head>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
-      <style type="text/css">
-         /* html,body{
-            height: 100%;
-            margin: 0;
-            padding: 0;
-          }*/
-      </style>
-    </head>
-    <script type="text/javascript">
-
-        class Color{
-            static get black(){
-                return '#000';
-            }
-
-            static get white(){
-                return '#FFF';
-            }
-
-            static get red(){
-                return '#F00';
-            }
-
-            static get blue(){
-                return '#00F';
-            }
-
-            static get green(){
-                return '#0F0';
-            }
-        }
-
-        class Screen{
-            constructor(){
-                // this.width=document.body.clientWidth;
-                // this.height=document.body.clientHeight;
-
-                // this.width=window.screen.availWidth;
-                // this.height=window.screen.availHeight;
-                
-                this.width=window.innerWidth;
-                this.height=window.innerHeight;
-            }
-        }
-
-        class Size{
-            constructor(width,height){
-                this._width=width;
-                this._height=height;
-            }
-
-            get width(){
-                return scene.width*this._width+"px";
-            }
-
-            get height(){
-                return scene.height*this._height+"px";
-            }
-        }
-
-        class Position{
-            constructor(x,y){
-                this.x=x;
-                this.y=y;
-            }
-        }
-
-        /**
-         * 动作
-         */
-        class Action{
-            constructor($name){
-                this.name=$name;
-            }
-
-            get act(){
-                return this.name;
-            }
-        }
-
-        class AnimateCss extends Action{
-        }
-
-        class MoveAction extends Action{
-            get act(){
-                return "animated bounce";
-            }
-        }
-
-        /**
-         * 动画 一系列动作的集合
-         */
-        class Animation{
-            constructor(){
-                this.actions=new Array;
-            }
-
-            add(action){
-                this.actions.push(action);
-            }
-
-
-        }
-
-        class Scene{
-            constructor(width,height){
-                this.width=width;
-                this.height=height;
-                this.pages=new Array;
-                this.doms=new Array;
-            }
-
-            add(page){
-                this.pages.push(page);
-            }
-
-
-            /**
-             * 切换页面-进入
-             * @Author   WindGreen<yqfwind@163.com>
-             * @DateTime 2017-04-18T09:38:42+0800
-             * @param    {[type]}                   i [description]
-             * @return   {[type]}                     [description]
-             */
-            enter(i){
-                if(this.pages[i]!==undefined){
-                    this.doms[i]=this.pages[i].display();
-                }else{
-                    console.log(i+" of pages not defined!");
-                }
-
-                this.display();
-            }
-
-            /**
-             * 切换页面-离开
-             * @Author   WindGreen<yqfwind@163.com>
-             * @DateTime 2017-04-18T09:39:00+0800
-             * @param    {[type]}                   i [description]
-             * @return   {[type]}                     [description]
-             */
-            leave(i){
-                this.doms[i]='';
-
-                this.display();
-            }
-
-            display(){
-                for (var i = 0; i < this.doms.length; i++) {
-                    document.write(this.doms[i]);
-                }
-            }
-
-        }
-
-        class Page{
-            constructor(size){
-                this.size=size;
-                this.elements=new Array;
-                this.dom='';
-            }
-
-            add(element){
-                this.elements.push(element);
-            }
-
-            /**
-             * 将页面元素生成dom
-             * @Author   WindGreen<yqfwind@163.com>
-             * @DateTime 2017-04-18T09:40:40+0800
-             * @return   {[type]}                   [description]
-             */
-            display(){
-                for (var i = 0; i < this.elements.length; i++) {
-                    this.dom+=this.elements[i].show();
-                }
-                return this.dom;
-            }
-
-        }
-
-        class Element{
-            constructor(position,size){
-                this.position=position;
-                this.size=size;
-                this.animation=new Animation;
-            }
-
-            show(){
-                return this.toTag();
-            }
-
-            get className(){
-                let name='';
-                for (var i = 0; i < this.animation.actions.length; i++) {
-                    name+=this.animation.actions[i].act+" ";
-                }
-                return name;
-            }
-
-            get style(){
-                return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
-            }
-        }
-
-        class Picture extends Element{
-            constructor(position,size,src=''){
-                super(position,size);
-                this.src=src;
-            }
-
-            toTag(){
-                return '<img class="'+this.className+'" style="'+this.style+'" src="'+this.src+'">';
-            }
-        }
-
-        class Text extends Element{
-            constructor(position,size,content){
-                super(position,size);
-                this.content=content;
-                this.color=Color.red;
-            }
-
-            get style(){
-                let style=super.style;
-                return style+"color:"+this.color+";";
-            }
-
-            toTag(){
-                return '<p class="'+this.className+'" style="'+this.style+'">'+this.content+'</p>';
-            }
-        }
-
-        class Voice extends Element{
-            constructor(position,size,src=''){
-                super(position,size);
-                this.src=src;
-            }
-        }
-
-        class Video extends Element{
-            constructor(position,size,src=''){
-                super(position,size);
-                this.src=src;
-            }
-        }
-
-        class Button extends Element{
-            constructor(position,size){
-                super(position,size);
-            }
-        }
-
-        var scene;
-
-        //window.onload=function(){
-            let screen=new Screen;//屏幕
-            console.log(screen);
-            scene=new Scene(screen.width,screen.height);//场景
-            (function(){
-                let page=new Page(new Size(scene.width,scene.height));
-
-                let picture=new Picture(new Position(100,10),new Size(1,0.5),"https://raw.githubusercontent.com/panteng/wechat-h5-boilerplate/master/demo.jpg");
-                picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
-
-                let text=new Text(new Position('50%','20%'),new Size(1,0.5),"哈哈");
-                text.animation.add(new AnimateCss('animated bounceInRight infinite'));
-
-                page.add(picture);
-                page.add(text);
-
-                scene.add(page);
-            })();
-            console.log(scene);
-
-            scene.enter(0);//展示页面
-        //}
-    </script>
+  <head>
+    <link rel="stylesheet" href="css/animate.min.css">
+    <style type="text/css">
+      html,body{
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
+    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/h5.js"></script>
+  </head>
 <body>
+  <script type="text/javascript">
+      var scene;
+
+      //window.onload=function(){
+          scene=Scene.initWithScreen();
+          //scene=Scene.initWithTag('scene');
+          (function(){
+              let page=new Page('p1');
+              page.size=new Size(scene.width,scene.height);
+
+
+              let picture=new Picture("pic1");
+              picture.position=new Position(0,0);
+              picture.size=new Size(1,1);
+              picture.src="img/demo.jpg";
+              //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
+
+              let text=new Text('hello');
+              text.size=new Size(1,1);
+              text.position=new Position(0.5,0.5);
+              text.fontSize=0.05;
+              text.content="Hello Word";
+              //text.animation.add(new AnimateCss('animated bounceInRight infinite'));
+
+              page.add(picture);
+              page.add(text);
+              page.animation.add(new AnimateCss('animated bounceInRight'));
+
+              scene.add(page);
+          })();
+          console.log(scene);
+
+          scene.enter(0);//展示页面
+
+          new Vue({
+            el:'#scene'
+          });
+      //}
+  </script>
+
+<!-- 
+
+<div id="example">
+     <my-com1></my-com1>
+</div>
+  <script type="text/javascript">
+    Vue.component('my-com1',{
+      template:'<div class="com1"><my-com2></my-com2></div>',
+      data:function(){
+        return {
+          content:'hh'
+        }
+      }
+    });
+    Vue.component('my-com2',{
+      template:'<div class="com2">{{content}}</div>',
+      data:function(){
+        return {
+          content:'ss'
+        }
+      }
+    });  
+    new Vue({
+      el: '#example',
+    })
+  </script> -->
+
+
+
 
 </body>
 </html>
