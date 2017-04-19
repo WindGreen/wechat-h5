@@ -48,9 +48,7 @@
 
           scene.enter(0);//展示页面
 
-          var vm=new Vue({
-            el:'#scene'
-          });
+         
           //建立数组来存vue对象 通过ID直接控制vue对象 list['hello'].content='xxx';
       //}
   </script>
@@ -58,30 +56,23 @@
 <!-- 
 
 <div id="example">
-     <my-com1></my-com1>
+	{{content}}
 </div>
   <script type="text/javascript">
-    Vue.component('my-com1',{
-      template:'<div class="com1"><my-com2></my-com2></div>',
-      data:function(){
-        return {
-          content:'hh'
-        }
-      }
+    var v1=new Vue({
+    	el:'#example',
+    	data:{
+    		content:'hh'
+    	}
     });
-    Vue.component('my-com2',{
-      template:'<div class="com2">{{content}}</div>',
-      data:function(){
-        return {
-          content:'ss'
-        }
-      }
-    });  
-    new Vue({
-      el: '#example',
+    var v2=new Vue({
+    	el:'#example',
+    	data:{
+    		content:'yy'
+    	}
     })
-  </script> -->
-
+  </script>
+ -->
 
 
 

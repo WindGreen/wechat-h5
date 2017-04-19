@@ -121,6 +121,7 @@ class Scene{
         this.pages=new Array;
         this.doms=new Array;
         this.container=tag;
+        this.vues=new Array;
     }
 
     static initWithScreen(){
@@ -175,8 +176,19 @@ class Scene{
         for (var i = 0; i < this.doms.length; i++) {
             html+=this.doms[i];
         }
-        console.log(html);
         this.container.html(html);
+
+        this.vues['scene']=new Vue({
+            el:'#scene'
+        });
+        this.initVues(this.vues['scene']);
+    }
+
+    initVues(vue){
+        this.vues[vue.id]=vue;
+        for (var i = 0; i < vue.$children.length; i++) {
+            this.initVues(vue.$children[i]);
+        }
     }
 
 }
