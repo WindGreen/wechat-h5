@@ -28,25 +28,31 @@
               let picture=new Picture("pic1");
               picture.position=new Position(0,0);
               picture.size=new Size(1,1);
-              picture.src="img/demo.jpg";
+              picture.src="img/1.jpg";
               //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
 
-              let text=new Text('hello');
-              text.size=new Size(1,1);
-              text.position=new Position(0.5,0.5);
-              text.fontSize=0.05;
-              text.content="Hello Word";
-              //text.animation.add(new AnimateCss('animated bounceInRight infinite'));
+              page.add(picture);
+              page.animation.add(new AnimateCss('animated bounceInRight'));
+              scene.add(page);
+
+          })();
+          (function(){
+              let page=new Page('p2');
+							page.size=new Size(scene.width,scene.height);
+
+              let picture=new Picture("pic2");
+              picture.position=new Position(0,0);
+              picture.size=new Size(1,1);
+              picture.src="img/2.jpg";
+              //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
 
               page.add(picture);
-              page.add(text);
               page.animation.add(new AnimateCss('animated bounceInRight'));
-
               scene.add(page);
           })();
           console.log(scene);
 
-          scene.enter(0);//展示页面
+          scene.display();//展示页面
 
          
           //建立数组来存vue对象 通过ID直接控制vue对象 list['hello'].content='xxx';
@@ -75,6 +81,44 @@
  -->
 
 
+<!-- <div id="demo">
+	<div class=".no-mode-translate-demo-wrapper">
+	  <transition name="no-mode-translate-fade">
+	    <button v-if="on" key="on" @click="on=!on">on</button>
+	    <button v-else key="off" @click="on=!on">off</button>
+	  </transition>
+	</div>
+</div>
 
+<script>
+new Vue({
+  el: '#demo',
+  data: {
+    on: true,
+  }
+})
+</script>
+<style>
+.no-mode-translate-demo-wrapper {
+  position: relative;
+  height: 18px;
+}
+.no-mode-translate-demo-wrapper button {
+  position: absolute;
+}
+.no-mode-translate-fade-enter-active, .no-mode-translate-fade-leave-active {
+  transition: all 1s;
+}
+.no-mode-translate-fade-enter, .no-mode-translate-fade-leave-active {
+  opacity: 0;
+}
+.no-mode-translate-fade-enter {
+  transform: translateX(31px);
+}
+.no-mode-translate-fade-leave-active {
+  transform: translateX(-31px);
+}
+</style>
+ -->
 </body>
 </html>

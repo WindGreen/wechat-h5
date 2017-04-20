@@ -58,8 +58,12 @@ class Size{
 
 class Position{
     constructor(x,y){
-        this._x=x;
-        this._y=y;
+        this.x=x;
+        this.y=y;
+    }
+
+    set x(v){
+        this._x=v;
     }
 
     get x(){
@@ -67,6 +71,10 @@ class Position{
             return this._x*scene.width+"px";
         //else 
         //  return this._x+"px";
+    }
+
+    set y(v){
+        this._y=v;
     }
 
     get y(){
@@ -119,7 +127,6 @@ class Scene{
         this.width=width;
         this.height=height;
         this.pages=new Array;
-        this.doms=new Array;
         this.container=tag;
         this.vues=new Array;
     }
@@ -137,44 +144,14 @@ class Scene{
     }
 
     add(page){
-        this.pages.push(page);
-    }
-
-
-    /**
-     * 切换页面-进入
-     * @Author   WindGreen<yqfwind@163.com>
-     * @DateTime 2017-04-18T09:38:42+0800
-     * @param    {[type]}                   i [description]
-     * @return   {[type]}                     [description]
-     */
-    enter(i){
-        if(this.pages[i]!==undefined){
-            this.doms[i]=this.pages[i].show();
-        }else{
-            console.log(i+" of pages not defined!");
-        }
-
-        this.display();
-    }
-
-    /**
-     * 切换页面-离开
-     * @Author   WindGreen<yqfwind@163.com>
-     * @DateTime 2017-04-18T09:39:00+0800
-     * @param    {[type]}                   i [description]
-     * @return   {[type]}                     [description]
-     */
-    leave(i){
-        this.doms[i]='';
-
-        this.display();
+        page.position.x=scene.width+1;
+        this.pages[page.id]=page;
     }
 
     display(){
         let html='';
-        for (var i = 0; i < this.doms.length; i++) {
-            html+=this.doms[i];
+        for(let id in this.pages){
+            html+=this.pages[id].show();
         }
         this.container.html(html);
 
@@ -191,13 +168,18 @@ class Scene{
         }
     }
 
+    enter(id){
+        $('#'+id).css('left',0);
+        $('#'+id).removeClass().addClass('animated bounceInUp');
+    }
+
 }
 
 
 class Element{
     constructor(id){
         this.id=id;
-        this.position;
+        this.position=new Position(0,0);
         this.size;
         this.animation=new Animation;
         this.tagName='div';
@@ -272,12 +254,6 @@ class Page extends Element{
         this.elements=new Array;
         this.animation=new Animation;
     }
-
-
-    get style(){
-        return "display:block;position:absolute;margin:0;padding:0;width:"+this.size.width+";height:"+this.size.height+";";
-    }
-
 }
 
 class Picture extends Element{
@@ -369,3 +345,40 @@ class Button extends Element{
     }
 }
 
+
+/*var scene;
+
+//window.onload=function(){
+  scene=Scene.initWithScreen();
+  //scene=Scene.initWithTag('scene');
+  (function(){
+      let page=new Page('p1');
+      page.size=new Size(scene.width,scene.height);
+
+
+      let picture=new Picture("pic1");
+      picture.position=new Position(0,0);
+      picture.size=new Size(1,1);
+      picture.src="img/demo.jpg";
+      //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
+
+      let text=new Text('hello');
+      text.size=new Size(1,1);
+      text.position=new Position(0.5,0.5);
+      text.fontSize=0.05;
+      text.content="Hello Word";
+      //text.animation.add(new AnimateCss('animated bounceInRight infinite'));
+
+      page.add(picture);
+      page.add(text);
+      page.animation.add(new AnimateCss('animated bounceInRight'));
+
+      scene.add(page);
+  })();
+  console.log(scene);
+
+  scene.enter(0);//展示页面
+
+ 
+  //建立数组来存vue对象 通过ID直接控制vue对象 list['hello'].content='xxx';
+//}*/
