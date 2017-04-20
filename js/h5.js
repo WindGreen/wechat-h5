@@ -151,10 +151,14 @@ class Scene{
         this.elements=new Array;
     }
 
+    static get id(){
+        return 'scene';
+    }
+
     static initWithScreen(){
         let screen = new Screen;
-        document.write('<div id="scene" style="margin:0;padding:0;width:'+screen.width+'px;height:'+screen.height+'px;"></div>')
-        let tag=$("#scene");
+        document.write('<div id="'+Scene.id+'" style="margin:0;padding:0;width:'+screen.width+'px;height:'+screen.height+'px;"></div>')
+        let tag=$("#"+Scene.id);
         return new Scene(screen.width,screen.height,tag);
     }
 
@@ -177,20 +181,32 @@ class Scene{
 
         this.initVues(
             new Vue({
-                el:'#scene'
+                el:'#'+Scene.id,
+                data:{
+                    domId:Scene.id
+                }
             })
         );
     }
 
     initVues(vue){
         this.vues[vue.domId]=vue;
-        for (var i = 0; i < vue.$children.length; i++) {
+        for (let i = 0; i < vue.$children.length; i++) {
             this.initVues(vue.$children[i]);
         }
     }
 
     show(id){
         this.vues[id].show=true;
+    }
+
+    showPage(id){
+        for(let _id in this.pages){
+            if(_id===id)
+                this.show(id);
+            else
+                this.hide(_id);
+        }
     }
 
     hide(id){
@@ -206,7 +222,6 @@ class Element{
         this.position=new Position(0,0);
         this.size;
         this.animation=new Animation;
-        this.tagName='div';
         this.elements=new Array;
         this._dom='';
     }
@@ -214,7 +229,7 @@ class Element{
 
     get domClass(){
         let name='';
-        for (var i = 0; i < this.animation.actions.length; i++) {
+        for (let i = 0; i < this.animation.actions.length; i++) {
             name+=this.animation.actions[i].act+" ";
         }
         return name;
@@ -222,7 +237,7 @@ class Element{
 
     get enterAction(){
         let name='';
-        for (var i = 0; i < this.animation.actions.length; i++) {
+        for (let i = 0; i < this.animation.actions.length; i++) {
             name+=this.animation.actions[i].act+" ";
         }
         return name;
@@ -241,7 +256,7 @@ class Element{
      */
     get dom(){
         this._dom='';
-        for (var i = 0; i < this.elements.length; i++) {
+        for (let i = 0; i < this.elements.length; i++) {
             this._dom+=this.elements[i].build();
         }
         return this._dom;
@@ -249,9 +264,8 @@ class Element{
 
     get data(){
         return {
-            show:false,
+            show:true,
             domId:this.id,
-            tagName:this.tagName,
             domClass:'',//element.className,
             style:this.style,
 
@@ -263,13 +277,7 @@ class Element{
     }
 
     get template(){
-        return '<'+this.tagName+' \
-                    v-if="show" \
-                    :id="domId" \
-                    :class="domClass" \
-                    :style="style">'+
-                        this.dom+
-                '</'+this.tagName+'>';
+        return '<div v-if="show" :id="domId" :class="domClass" :style="style">'+this.dom+'</div>';
     }
 
     add(element){
@@ -286,14 +294,7 @@ class Element{
         Vue.component(this.id,{
             template:'<transition \
                         name="" \
-                        v-on:before-enter="beforeEnter" \
-                        v-on:enter="enter" \
                         v-on:after-enter="afterEnter" \
-                        v-on:enter-cancelled="enterCancelled" \
-                        v-on:before-leave="beforeLeave" \
-                        v-on:leave="leave" \
-                        v-on:after-leave="afterLeave" \
-                        v-on:leave-cancelled="leaveCancelled" \
                         :enter-class="enterClass" \
                         :enter-active-class="enterActiveClass" \
                         :leave-class="leaveClass" \
@@ -315,6 +316,7 @@ class Element{
                 },
                 afterEnter: function (el) {
                     // ...
+                    scene.vues[element.id]=this;
                 },
                 enterCancelled: function (el) {
                 // ...
@@ -355,13 +357,24 @@ class Page extends Element{
         super(id);
     }
 
+    get template(){
+        return '<div v-if="show" :id="domId" :class="domClass" :style="style">'+this.dom+'</div>';
+    }
+
+
+    get data(){
+        return Object.assign(super.data,{
+            show:false,
+        });
+    }
+
+
 }
 
 class Picture extends Element{
     constructor(id){
         super(id);
         this.src;
-        this.tagName='img';
     }
 
     get template(){
@@ -370,6 +383,18 @@ class Picture extends Element{
 
     get data(){
         return Object.assign(super.data,{
+            src:this.src
+        });
+    }
+
+    get template(){
+        return '<img v-if="show" :id="domId" :class="domClass" :style="style" :src="src">';
+    }
+
+
+    get data(){
+        return Object.assign(super.data,{
+            show:true,
             src:this.src
         });
     }
@@ -397,9 +422,14 @@ class Text extends Element{
         return style+"color:"+this.color+";font-size:"+this.fontSize+"px;";
     }
 
+    get template(){
+        return '<p v-if="show" :id="domId" :class="domClass" :style="style">{{content}}</p>';
+    }
+
     get data(){
         return Object.assign(super.data,{
-            src:this.src
+            show:true,
+            content:this.content
         });
     }
 
