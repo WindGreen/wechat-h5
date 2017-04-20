@@ -89,23 +89,34 @@ class Position{
  * 动作
  */
 class Action{
-    constructor($name){
-        this.name=$name;
-    }
-
-    get act(){
-        return this.name;
+    constructor(name){
+        this.name=name;
+        this.domClass='';
     }
 }
 
-class AnimateCss extends Action{
-}
+class EnterAction extends Action{
+    constructor(domClass){
+        super(EnterAction.name);
+        this.domClass=domClass;
+    }
 
-class MoveAction extends Action{
-    get act(){
-        return "animated bounce";
+    static get name(){
+        return 'enter-action';
     }
 }
+
+class LeaveAction extends Action{
+    constructor(domClass){
+        super(LeaveAction.name);
+        this.domClass=domClass;
+    }
+
+    static get name(){
+        return 'leave-action';
+    }
+}
+
 
 /**
  * 动画 一系列动作的集合
@@ -113,10 +124,18 @@ class MoveAction extends Action{
 class Animation{
     constructor(){
         this.actions=new Array;
+        this.enterAction=new EnterAction('');//特殊动作 入场动作
+        this.leaveAction=new LeaveAction('');//特殊动作 离场动作
     }
 
     add(action){
         this.actions.push(action);
+        if(action.name==EnterAction.name){
+            this.enterAction=action;
+        }
+        else if(action.name==LeaveAction.name){
+            this.leaveAction=action;
+        }
     }
 
 
@@ -129,6 +148,7 @@ class Scene{
         this.pages=new Array;
         this.container=tag;
         this.vues=new Array;
+        this.elements=new Array;
     }
 
     static initWithScreen(){
@@ -144,33 +164,37 @@ class Scene{
     }
 
     add(page){
-        page.position.x=scene.width+1;
+        //page.position.x=scene.width+1;
         this.pages[page.id]=page;
     }
 
     display(){
         let html='';
         for(let id in this.pages){
-            html+=this.pages[id].show();
+            html+=this.pages[id].build();
         }
         this.container.html(html);
 
-        this.vues['scene']=new Vue({
-            el:'#scene'
-        });
-        this.initVues(this.vues['scene']);
+        this.initVues(
+            new Vue({
+                el:'#scene'
+            })
+        );
     }
 
     initVues(vue){
-        this.vues[vue.id]=vue;
+        this.vues[vue.domId]=vue;
         for (var i = 0; i < vue.$children.length; i++) {
             this.initVues(vue.$children[i]);
         }
     }
 
-    enter(id){
-        $('#'+id).css('left',0);
-        $('#'+id).removeClass().addClass('animated bounceInUp');
+    show(id){
+        this.vues[id].show=true;
+    }
+
+    hide(id){
+        this.vues[id].show=false;
     }
 
 }
@@ -188,7 +212,15 @@ class Element{
     }
 
 
-    get className(){
+    get domClass(){
+        let name='';
+        for (var i = 0; i < this.animation.actions.length; i++) {
+            name+=this.animation.actions[i].act+" ";
+        }
+        return name;
+    }
+
+    get enterAction(){
         let name='';
         for (var i = 0; i < this.animation.actions.length; i++) {
             name+=this.animation.actions[i].act+" ";
@@ -210,40 +242,110 @@ class Element{
     get dom(){
         this._dom='';
         for (var i = 0; i < this.elements.length; i++) {
-            this._dom+=this.elements[i].show();
+            this._dom+=this.elements[i].build();
         }
         return this._dom;
+    }
+
+    get data(){
+        return {
+            show:false,
+            domId:this.id,
+            tagName:this.tagName,
+            domClass:'',//element.className,
+            style:this.style,
+
+            enterClass:'',
+            enterActiveClass:this.animation.enterAction.domClass,
+            leaveClass:'',
+            leaveActiveClass:this.animation.leaveAction.domClass,
+        };
+    }
+
+    get template(){
+        return '<'+this.tagName+' \
+                    v-if="show" \
+                    :id="domId" \
+                    :class="domClass" \
+                    :style="style">'+
+                        this.dom+
+                '</'+this.tagName+'>';
     }
 
     add(element){
         this.elements.push(element);
     }
 
-    show(){
+    build(){
+        scene.elements[this.id]=this;//注册到scene
         return this.vue();//构建vue组件
     }
 
     vue(){
         let element=this;
         Vue.component(this.id,{
-            template:'<'+this.tagName+' :id="id" :class="className" :style="style">'+this.dom+'</'+this.tagName+'>',
+            template:'<transition \
+                        name="" \
+                        v-on:before-enter="beforeEnter" \
+                        v-on:enter="enter" \
+                        v-on:after-enter="afterEnter" \
+                        v-on:enter-cancelled="enterCancelled" \
+                        v-on:before-leave="beforeLeave" \
+                        v-on:leave="leave" \
+                        v-on:after-leave="afterLeave" \
+                        v-on:leave-cancelled="leaveCancelled" \
+                        :enter-class="enterClass" \
+                        :enter-active-class="enterActiveClass" \
+                        :leave-class="leaveClass" \
+                        :leave-active-class="leaveActiveClass">\
+                            '+element.template+'\
+                    </transition>',
             methods:{
-                getProperty:function(name){
-                    return element[name];
+                // --------
+                // 进入中
+                // --------
+                beforeEnter: function (el) {
+                    // ...
+                },
+                // 此回调函数是可选项的设置
+                // 与 CSS 结合时使用
+                enter: function (el, done) {
+                    // ...
+                    //done();
+                },
+                afterEnter: function (el) {
+                    // ...
+                },
+                enterCancelled: function (el) {
+                // ...
+                },
+                // --------
+                // 离开时
+                // --------
+                beforeLeave: function (el) {
+                    // ...
+                },
+                // 此回调函数是可选项的设置
+                // 与 CSS 结合时使用
+                leave: function (el, done) {
+                    // ...
+                    //done()
+                },
+                afterLeave: function (el) {
+                    // ...
+                },
+                // leaveCancelled 只用于 v-show 中
+                leaveCancelled: function (el) {
+                    // ...
                 }
+
             },
             data:function(){
-                return {
-                    id:element.id,
-                    tagName:element.tagName,
-                    className:element.className,
-                    style:element.style,
-                };
+                return element.data;
             }
         });
         return '<'+this.id+'></'+this.id+'>';
     }
-
 
 }
 
@@ -251,9 +353,8 @@ class Element{
 class Page extends Element{
     constructor(id){
         super(id);
-        this.elements=new Array;
-        this.animation=new Animation;
     }
+
 }
 
 class Picture extends Element{
@@ -267,21 +368,10 @@ class Picture extends Element{
         return ;
     }
 
-    vue(){
-        let element=this;
-        Vue.component(this.id,{
-            template:'<'+this.tagName+' :id="id" :class="className" :style="style" :src="src"></img>',
-            data:function(){
-                return {
-                    id:element.id,
-                    tagName:element.tagName,
-                    className:element.className,
-                    style:element.style,
-                    src:element.src
-                };
-            }
+    get data(){
+        return Object.assign(super.data,{
+            src:this.src
         });
-        return '<'+this.id+'></'+this.id+'>';
     }
 }
 
@@ -307,22 +397,12 @@ class Text extends Element{
         return style+"color:"+this.color+";font-size:"+this.fontSize+"px;";
     }
 
-    vue(){
-        let element=this;
-        Vue.component(this.id,{
-            template:'<'+this.tagName+' :id="id" :class="className" :style="style">{{content}}</'+this.tagName+'>',
-            data:function(){
-                return {
-                    id:element.id,
-                    tagName:element.tagName,
-                    className:element.className,
-                    style:element.style,
-                    content:element.content
-                };
-            }
+    get data(){
+        return Object.assign(super.data,{
+            src:this.src
         });
-        return '<'+this.id+'></'+this.id+'>';
     }
+
 }
 
 class Voice extends Element{

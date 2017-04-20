@@ -30,13 +30,17 @@
               picture.size=new Size(1,1);
               picture.src="img/1.jpg";
               //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
+              
+              let text=new Text('Hello');
+
 
               page.add(picture);
-              page.animation.add(new AnimateCss('animated bounceInRight'));
+              page.animation.add(new EnterAction('animated bounceInRight'));
+              page.animation.add(new LeaveAction('animated bounceOutRight'));
               scene.add(page);
 
           })();
-          (function(){
+/*          (function(){
               let page=new Page('p2');
 							page.size=new Size(scene.width,scene.height);
 
@@ -47,9 +51,9 @@
               //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
 
               page.add(picture);
-              page.animation.add(new AnimateCss('animated bounceInRight'));
+              //page.animation.add(new AnimateCss('animated bounceInRight'));
               scene.add(page);
-          })();
+          })();*/
           console.log(scene);
 
           scene.display();//展示页面
