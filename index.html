@@ -21,48 +21,53 @@
           scene=Scene.initWithScreen();
           //scene=Scene.initWithTag('scene');
           (function(){
-              let page=new Page('p1');
-              page.size=new Size(scene.width,scene.height);
+              let page=new Page({
+              	id:'p1',
+              	size:new Size(1,1)
+              });
 
 
-              let picture=new Picture("pic1");
-              picture.position=new Position(0,0);
-              picture.size=new Size(1,1);
-              picture.src="img/1.jpg";
-              //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
+              let picture=new Picture({
+              	position:new Position(0,0),
+              	size:new Size(1,1),
+              	src:"img/1.jpg"
+              });
               
-              let text=new Text('Hello');
-              text.content="Hello World";
-              text.position=new Position(0.5,0.5);
-              text.size=new Size(1,1);
-
+              let text=new Text({
+	              content:"Hello World",
+	              position:new Position(0.5,0.5),
+	              //size:new Size(1,1),
+	              'fontSize':0.1,
+	            });
 
               page.add(picture);
               page.add(text);
-              page.animation.add(new EnterAction('animated bounceInRight'));
-              page.animation.add(new LeaveAction('animated bounceOutRight'));
+              page.animation.add(new EnterAction(''));
+              page.animation.add(new LeaveAction('animated bounceOutLeft'));
               scene.add(page);
 
           })();
           (function(){
-              let page=new Page('p2');
-							page.size=new Size(scene.width,scene.height);
+              let page=new Page({
+              	id:'p2',
+								size:new Size(1,1)
+							});
 
-              let picture=new Picture("pic2");
-              picture.position=new Position(0,0);
-              picture.size=new Size(1,1);
-              picture.src="img/2.jpg";
-              //picture.animation.add(new AnimateCss('animated bounceInRight infinite'));
+              let picture=new Picture({
+	              position:new Position(0,0),
+	              size:new Size(1,1),
+	              src:"img/2.jpg",
+	            });
 
               page.add(picture);
-              page.animation.add(new EnterAction('animated bounceInLeft'));
+              page.animation.add(new EnterAction('animated bounceInRight'));
               page.animation.add(new LeaveAction('animated bounceOutLeft'));
               scene.add(page);
           })();
           console.log(scene);
 
           scene.display();//展示页面
-
+          scene.showPage('p1');
          
           //建立数组来存vue对象 通过ID直接控制vue对象 list['hello'].content='xxx';
       //}

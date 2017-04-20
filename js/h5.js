@@ -1,4 +1,4 @@
-
+var autoElementId=0;
 
 class Color{
     static get black(){
@@ -142,13 +142,11 @@ class Animation{
 }
 
 class Scene{
-    constructor(width,height,tag){
-        this.width=width;
-        this.height=height;
+    constructor(attributes={}){
         this.pages=new Array;
-        this.container=tag;
         this.vues=new Array;
         this.elements=new Array;
+        Object.assign(this,attributes);
     }
 
     static get id(){
@@ -159,12 +157,18 @@ class Scene{
         let screen = new Screen;
         document.write('<div id="'+Scene.id+'" style="margin:0;padding:0;width:'+screen.width+'px;height:'+screen.height+'px;"></div>')
         let tag=$("#"+Scene.id);
-        return new Scene(screen.width,screen.height,tag);
+        return new Scene({
+            width:screen.width,
+            height:screen.height,
+            container:tag});
     }
 
     static initWithTag(tagId){
         tag=$('#'+tagId);
-        return new Scene(tag.clientWidth,tag.clientHeight,tag);
+        return new Scene({
+            width:tag.clientWidth,
+            height:tag.clientHeight,
+            container:tag});
     }
 
     add(page){
@@ -217,15 +221,43 @@ class Scene{
 
 
 class Element{
-    constructor(id){
-        this.id=id;
+    constructor(attributes={}){
         this.position=new Position(0,0);
-        this.size;
+        this._size;
         this.animation=new Animation;
         this.elements=new Array;
         this._dom='';
+        //this.domClass=new Array;
+        this._style={
+            display:'block',
+            position:'absolute',
+            margin:'0',
+            padding:'0',
+        };
+        Object.assign(this,attributes);
+        if(this.id===undefined) {
+            this.id='el'+autoElementId;
+            autoElementId++;
+        }
     }
 
+    set size(s){
+        this._size=s;
+    }
+
+    get size(){
+        if(this._size!==undefined && this._size.width!==undefined){
+            return "width:"+this._size.width+";height:"+this._size.height+";"
+        }else return '';
+    }
+
+    set position(p){
+        this._position=p;
+    }
+
+    get position(){
+        return "left:"+this._position.x+";top:"+this._position.y+";";
+    }
 
     get domClass(){
         let name='';
@@ -243,8 +275,17 @@ class Element{
         return name;
     }
 
+    set style(obj={}){
+        Object.assign(this._style,obj);
+    }
+
     get style(){
-        return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
+        let txt=this.position+this.size;
+        for(name in this._style){
+            txt+=name+':'+this._style[name]+';';
+        }
+        return txt;
+        //return "display:block;position:absolute;margin:0;padding:0;left:"+this.position.x+";top:"+this.position.y+";width:"+this.size.width+";height:"+this.size.height+";";
     }
 
 
@@ -353,14 +394,10 @@ class Element{
 
 
 class Page extends Element{
-    constructor(id){
-        super(id);
-    }
 
     get template(){
         return '<div v-if="show" :id="domId" :class="domClass" :style="style">'+this.dom+'</div>';
     }
-
 
     get data(){
         return Object.assign(super.data,{
@@ -372,10 +409,6 @@ class Page extends Element{
 }
 
 class Picture extends Element{
-    constructor(id){
-        super(id);
-        this.src;
-    }
 
     get template(){
         return ;
@@ -401,25 +434,13 @@ class Picture extends Element{
 }
 
 class Text extends Element{
-    constructor(id){
-        super(id);
-        this.content;
-        this.color=Color.black;
-        this._fontSize;
-        this.tagName='p';
-    }
 
-    set fontSize(value){
-        this._fontSize=value;
+    set fontSize(v){
+        this._fontSize=v;
     }
 
     get fontSize(){
-        return this._fontSize*scene.width;
-    }
-
-    get style(){
-        let style=super.style;
-        return style+"color:"+this.color+";font-size:"+this.fontSize+"px;";
+        return scene.height*this._fontSize+'px';
     }
 
     get template(){
@@ -433,26 +454,27 @@ class Text extends Element{
         });
     }
 
+    get style(){
+        let txt=super.style;
+        txt+="font-size:"+this.fontSize+";line-height:"+this.fontSize+";";
+        return txt;
+    }
+
 }
 
 class Voice extends Element{
-    constructor(position,size,src=''){
-        super(position,size);
-        this.src=src;
-    }
+
+
 }
 
 class Video extends Element{
-    constructor(position,size,src=''){
-        super(position,size);
-        this.src=src;
-    }
+
+
 }
 
 class Button extends Element{
-    constructor(position,size){
-        super(position,size);
-    }
+
+
 }
 
 
