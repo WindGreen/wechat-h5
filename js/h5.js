@@ -43,14 +43,14 @@ class Size{
 
     get width(){
         //if(this._width<=1)
-            return scene.width*this._width+"px";
+            return scene.width*this._width;
         //else
             //return this._width+"px";
     }
 
     get height(){
         //if(this._height<=1)
-            return scene.height*this._height+"px";
+            return scene.height*this._height;
         //else
             //return this._height+"px";
     }
@@ -68,7 +68,7 @@ class Position{
 
     get x(){
         //if(this._x<=1)
-            return this._x*scene.width+"px";
+            return this._x*scene.width;
         //else 
         //  return this._x+"px";
     }
@@ -79,7 +79,7 @@ class Position{
 
     get y(){
         //if(this._y<=1)
-            return this._y*scene.height+"px";
+            return this._y*scene.height;
         //else
             //return this._y;
     }
@@ -173,11 +173,9 @@ class Scene{
 
     showPage(id){
         for(let _id in this.pages){
-            if(_id===id)
-                this.show(id);
-            else
-                this.hide(_id);
+            this.hide(_id);
         }
+        this.show(id);
     }
 
     hide(id){
@@ -219,7 +217,7 @@ class Element{
 
     get size(){
         if(this._size!==undefined && this._size.width!==undefined){
-            return "width:"+this._size.width+";height:"+this._size.height+";"
+            return "width:"+this._size.width+"px;height:"+this._size.height+"px;"
         }else return '';
     }
 
@@ -228,7 +226,7 @@ class Element{
     }
 
     get position(){
-        return "left:"+this._position.x+";top:"+this._position.y+";";
+        return "left:"+this._position.x+"px;top:"+this._position.y+"px;";
     }
 
     set style(obj={}){
@@ -368,12 +366,13 @@ class Page extends Element{
     }
 
     get template(){
-        return '<div v-if="show" :id="domId" :class="domClass" :style="style">'+this.dom+'</div>';
+        return '<div v-model="data" v-if="show" :id="domId" :class="domClass" :style="style">'+this.dom+'</div>';
     }
 
     get data(){
         return Object.assign(super.data,{
             show:false,
+            data:123
         });
     }
 
