@@ -85,77 +85,14 @@ class Position{
     }
 }
 
-class Listener{
-    constructor(func){
-        this.func=func;
-    }
-
-    listen(el){
-        return this.func(el);
-    }
-}
-
-/**
- * 动作
- */
-class Action{
-    constructor(name){
-        this.name=name;
-        this.domClass='';
-    }
-}
-
-class EnterAction extends Action{
-    constructor(domClass){
-        super(EnterAction.name);
-        this.domClass=domClass;
-    }
-
-    static get name(){
-        return 'enter-action';
-    }
-}
-
-class LeaveAction extends Action{
-    constructor(domClass){
-        super(LeaveAction.name);
-        this.domClass=domClass;
-    }
-
-    static get name(){
-        return 'leave-action';
-    }
-}
-
-
-/**
- * 动画 一系列动作的集合
- */
-class Animation{
-    constructor(){
-        this.actions=new Array;
-        this.enterAction=new EnterAction('');//特殊动作 入场动作
-        this.leaveAction=new LeaveAction('');//特殊动作 离场动作
-    }
-
-    add(action){
-        this.actions.push(action);
-        if(action.name==EnterAction.name){
-            this.enterAction=action;
-        }
-        else if(action.name==LeaveAction.name){
-            this.leaveAction=action;
-        }
-    }
-
-
-}
-
 class Scene{
     constructor(attributes={}){
         this.pages=new Array;
         this.vues=new Array;
         this.elements=new Array;
+        this.queue=new Array;//页面队列
+        this._index=0;//页面默认生成索引
+        this.current;//当前页面
         Object.assign(this,attributes);
     }
 
@@ -181,9 +118,24 @@ class Scene{
             container:tag});
     }
 
-    add(page){
+    add(page,index){
         //page.position.x=scene.width+1;
         this.pages[page.id]=page;
+        if(index==undefined)
+            index=this._index++;
+        this.queue[index]=page;
+        this._linkPage();
+    }
+
+    _linkPage(){
+        let pre;
+        for(let index in this.queue){
+            if(pre!==undefined){
+                pre.nextPage=this.queue[index];
+                this.queue[index].prePage=pre;
+            }
+            pre=this.queue[index];
+        }
     }
 
     display(){
@@ -212,6 +164,11 @@ class Scene{
 
     show(id){
         this.vues[id].show=true;
+        this.current=this.pages[id];
+    }
+
+    showNext(){
+        this.showPage(this.current.nextPage.id);
     }
 
     showPage(id){
@@ -234,9 +191,13 @@ class Element{
     constructor(attributes={}){
         this.position=new Position(0,0);
         this._size;
-        this.animation=new Animation;
         this.elements=new Array;
-        this.listeners=new Array;
+        this.listeners={
+            'enter':function(el,done){done();},
+            'leave':function(el,done){done();},
+        };
+        Object.assign(this.listeners,attributes.listeners);
+        delete attributes.listeners;
         this._dom='';
         //this.domClass=new Array;
         this._style={
@@ -268,22 +229,6 @@ class Element{
 
     get position(){
         return "left:"+this._position.x+";top:"+this._position.y+";";
-    }
-
-    get domClass(){
-        let name='';
-        for (let i = 0; i < this.animation.actions.length; i++) {
-            name+=this.animation.actions[i].act+" ";
-        }
-        return name;
-    }
-
-    get enterAction(){
-        let name='';
-        for (let i = 0; i < this.animation.actions.length; i++) {
-            name+=this.animation.actions[i].act+" ";
-        }
-        return name;
     }
 
     set style(obj={}){
@@ -320,11 +265,6 @@ class Element{
             domId:this.id,
             domClass:'',//element.className,
             style:this.style,
-
-            enterClass:'',
-            enterActiveClass:this.animation.enterAction.domClass,
-            leaveClass:'',
-            leaveActiveClass:this.animation.leaveAction.domClass,
         };
     }
 
@@ -341,10 +281,16 @@ class Element{
         return this.vue();//构建vue组件
     }
 
-    bindListener(el){
-        for (var i = 0; i < this.listeners.length; i++) {
-            this.listeners[i].listen(el);
-        }
+    enter(el,done){
+        if(this.listeners['enter']!==undefined) this.listeners['enter'](el,done);
+    }
+
+    leave(el,done){
+        if(this.listeners['enter']!==undefined) this.listeners['leave'](el,done);
+    }
+
+    afterEnter(el){
+        if(this.listeners['after-enter']!==undefined) this.listeners['after-enter'](el);
     }
 
     vue(){
@@ -352,11 +298,15 @@ class Element{
         Vue.component(this.id,{
             template:'<transition \
                         name="" \
+                        v-on:before-enter="beforeEnter" \
+                        v-on:enter="enter" \
                         v-on:after-enter="afterEnter" \
-                        :enter-class="enterClass" \
-                        :enter-active-class="enterActiveClass" \
-                        :leave-class="leaveClass" \
-                        :leave-active-class="leaveActiveClass">\
+                        v-on:enter-cancelled="enterCancelled" \
+                        v-on:before-leave="beforeLeave" \
+                        v-on:leave="leave" \
+                        v-on:after-leave="afterLeave" \
+                        v-on:leave-cancelled="leaveCancelled" \
+                        v-bind:css="false"> \
                             '+element.template+'\
                     </transition>',
             methods:{
@@ -369,13 +319,12 @@ class Element{
                 // 此回调函数是可选项的设置
                 // 与 CSS 结合时使用
                 enter: function (el, done) {
-                    // ...
-                    //done();
+                    element.enter(el,done);
                 },
                 afterEnter: function (el) {
-                    scene.vues[element.id]=this;
+                    scene.vues[element.id]=this;//注册vue
                     //绑定其他事件
-                    element.bindListener(el);
+                    element.afterEnter(el);
                 },
                 enterCancelled: function (el) {
                 // ...
@@ -389,8 +338,7 @@ class Element{
                 // 此回调函数是可选项的设置
                 // 与 CSS 结合时使用
                 leave: function (el, done) {
-                    // ...
-                    //done()
+                    element.leave(el,done);
                 },
                 afterLeave: function (el) {
                     // ...
@@ -412,6 +360,12 @@ class Element{
 
 
 class Page extends Element{
+
+    constructor(attributes){
+        super(attributes);
+        this.nextPage;
+        this.prePage;
+    }
 
     get template(){
         return '<div v-if="show" :id="domId" :class="domClass" :style="style">'+this.dom+'</div>';
