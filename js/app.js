@@ -21,7 +21,19 @@ var scene;
             position:new Position(0.5,0.5),
             //size:new Size(1,1),
             'fontSize':0.05,
+            listeners:[
+                new Listener(function(el){
+                    $(el).on('click',function(){
+                        console.log('test ok');
+                    });
+                })
+            ]
         });
+        text.listeners.push(new Listener(function(el){
+            $(el).on('click',function(){
+                console.log('hh');
+            });
+        }));
 
         page.add(picture);
         page.add(text);

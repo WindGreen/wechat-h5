@@ -85,6 +85,16 @@ class Position{
     }
 }
 
+class Listener{
+    constructor(func){
+        this.func=func;
+    }
+
+    listen(el){
+        return this.func(el);
+    }
+}
+
 /**
  * 动作
  */
@@ -226,6 +236,7 @@ class Element{
         this._size;
         this.animation=new Animation;
         this.elements=new Array;
+        this.listeners=new Array;
         this._dom='';
         //this.domClass=new Array;
         this._style={
@@ -330,6 +341,12 @@ class Element{
         return this.vue();//构建vue组件
     }
 
+    bindListener(el){
+        for (var i = 0; i < this.listeners.length; i++) {
+            this.listeners[i].listen(el);
+        }
+    }
+
     vue(){
         let element=this;
         Vue.component(this.id,{
@@ -356,8 +373,9 @@ class Element{
                     //done();
                 },
                 afterEnter: function (el) {
-                    // ...
                     scene.vues[element.id]=this;
+                    //绑定其他事件
+                    element.bindListener(el);
                 },
                 enterCancelled: function (el) {
                 // ...
